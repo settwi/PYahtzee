@@ -14,7 +14,7 @@ how to organize dice?
  - really only need one set of dice
 
  - rounds. because yes
- - roll all five dice
+ - roll all five dicee
  - don't return already scored boxes
  - yahtzee bonus
 
