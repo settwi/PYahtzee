@@ -37,7 +37,7 @@ class YahtzeeGameLogic:
         return self._score_cards[self.turn]
 
     @property
-    def potential_scores(self):
+    def potential_scores(self) -> dict:
         return self._score_cards[self.turn].retrieve_scores(self.int_dice)
 
     @property
@@ -70,10 +70,7 @@ class YahtzeeGameLogic:
 
         for idx in which_dice:
             self.dice[idx].roll()
-        '''
-        for die, hack in zip(self.dice, [3, 6, 4, 4, 5]):
-            die.side = hack
-        '''
+
         self.rolls_remaining -= 1
 
     def score_roll(self, which: str):

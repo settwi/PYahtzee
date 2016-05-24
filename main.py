@@ -64,79 +64,85 @@ def ask_dice_indices(dice: list) -> list:
 
 
 def test_game_logic():
-        num_players = 2
+        try:
+            num_players = int(input("How many players?"))
+        except ValueError as e:
+            print("{} {}".format(type(e), ' '.join(e.args)))
+            print("assuming one player")
+            num_players = 1
+
         game_logic = YahtzeeGameLogic(num_players)
 
         print("Yahtzee test")
         while not game_logic.game_over:
+            option = input(
+                ("What would you like to do, Player {:d}?"
+                    "\n\tRound {:d}"
+                    "\n\tCurrent dice: {}"
+                    "\n\t1 Check score card"
+                    "\n\t2 Roll"
+                    "\n\t3 Score Roll"
+                    "\n\t4 Exit"
+                    "\n\n\tRolls remaining: {:d}"
+                    "\n").format(
+                        game_logic.current_player,
+                        game_logic.num_rounds + 1,
+                        str(game_logic.int_dice),
+                        game_logic.rolls_remaining)
+            )
             try:
-                option = input(
-                    ("What would you like to do, Player {:d}?"
-                        "\n\tRound {:d}"
-                        "\n\tCurrent dice: {}"
-                        "\n\t1 Check score card"
-                        "\n\t2 Roll"
-                        "\n\t3 Score Roll"
-                        "\n\t4 Exit"
-                        "\n\n\tRolls remaining: {:d}"
-                        "\n").format(
-                            game_logic.current_player,
-                            game_logic.num_rounds + 1,
-                            str(game_logic.int_dice),
-                            game_logic.rolls_remaining)
-                )
-                try:
-                    option = int(option)
-                except ValueError as e:
-                    print(e)
-                    continue
-                if option == 1:
-                    print("Current Card:")
-                    print_score_card(game_logic.current_score_card)
+                option = int(option)
+            except ValueError as e:
+                print(e)
+                continue
+            if option == 1:
+                print("Current Card:")
+                print_score_card(game_logic.current_score_card)
 
-                if option == 2:
-                    if game_logic.rolls_remaining == 0:
-                        print("You may only roll thrice")
-                        continue
-                    if game_logic.rolls_remaining == 3:
-                        print("First turn\n"
-                              "Rolling all dice")
-                        game_logic.roll_dice([0, 1, 2, 3, 4])
-                    else:
+            if option == 2:
+                if game_logic.rolls_remaining == 0:
+                    print("You may only roll thrice")
+                    continue
+                if game_logic.rolls_remaining == 3:
+                    print("First turn\n"
+                          "Rolling all dice")
+                    game_logic.roll_dice([0, 1, 2, 3, 4])
+                else:
+                    try:
                         dice_roll_indices = ask_dice_indices(game_logic.int_dice)
                         game_logic.roll_dice(dice_roll_indices)
+                    except RollError as e:
+                        print("RollError: " + ' '.join(e.args))
+            if option == 3:
+                if game_logic.rolls_remaining == 3:
+                    print("Roll at least once before scoring")
+                    continue
+                print("What would you like to score?")
+                print_scores(game_logic.potential_scores)
+                which = input()
+                try:
+                    game_logic.score_roll(which)
+                except ScoreError as e:
+                    print('\n'.join(e.args))
+                else:
+                    game_logic.next_turn()
 
-                if option == 3:
-                    if game_logic.rolls_remaining == 3:
-                        print("Roll at least once before scoring")
-                        continue
-                    print("What would you like to score?")
-                    print_scores(game_logic.potential_scores)
-                    which = input()
-                    try:
-                        game_logic.score_roll(which)
-                    except ScoreError as e:
-                        print('\n'.join(e.args))
-                    else:
-                        game_logic.next_turn()
-
-                if option == 4:
-                    if 'y' in input("Are you sure? (yes/no) ").lower():
-                        break
-
-            except Exception as e:
-                print(e)
+            if option == 4:
+                if 'y' in input("Are you sure? (yes/no) ").lower():
+                    break
 
         print("| Total Scores |")
-        for i, score_triple in enumerate(game_logic.total_scores()):
-            top, bonus, bottom = score_triple
+        for i, score_tuple in enumerate(game_logic.total_scores()):
+            top, top_bonus, bottom, yz_bonus = score_tuple
             print(
                 ("Player {:d}'s Score:\n"
                     "Top: {:d}\n"
-                    "Bonus: {:d}\n"
+                    "Top Bonus: {:d}\n"
                     "Bottom: {:d}\n"
+                    "Yahtzee Bonus: {:d}\n"
                     "____________________\n"
-                    "Total: {:d}\n").format(i + 1, top, bonus, bottom, sum(score_triple))
+                    "Total: {:d}\n").format(
+                        i + 1, top, top_bonus, bottom, yz_bonus, sum(score_tuple))
             )
 
 test_game_logic()
